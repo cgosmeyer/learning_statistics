@@ -15,23 +15,28 @@ References:
 
 """
 
+import numpy as np
 
-class DiffOfMeans():
+class DiffOfMeans(object):
     """ Base class for two-sample difference of means tests.
     """
-    def __init__(self, n1, n2, mean1, mean2, s1, s2, sigma1=None, sigma2=None):
+    def __init__(self, n1, n2):
 
-    	"""
+        """
         Parameters
         ----------
         n1 : int
             Size of sample 1.
         n2 : int
             Size of sample 2.
-    	"""
+        """
 
-    	self.n1 = float(n1)
-    	self.n2 = float(n2)
+        self.n1 = float(n1)
+        self.n2 = float(n2)
+        self.test_stat = None
+
+    def get_test_stat(self):
+        print(self.test_stat)
 
 
 class ZTest(DiffOfMeans):
@@ -84,7 +89,7 @@ class ZTest(DiffOfMeans):
             = sqrt( (SampleVariance1^2 / NumberSamples1) +
                     (SampleVariance2^2 / NumberSamples2) )
     """
-    def __init__(self, n1, n2, mean1, mean2, s1, s2, sigma1, sigma2):
+    def __init__(self, n1, n2, mean1, mean2, s1, s2, sigma1=None, sigma2=None):
         DiffOfMeans.__init__(self, n1, n2)
         """
         Parameters
@@ -104,49 +109,55 @@ class ZTest(DiffOfMeans):
         """
         self.mean1 = mean1
         self.mean2 = mean2
-    	self.s1 = s1
-    	self.s2 = s2
-    	self.sigma1 = sigma1
-    	self.sigma2 = sigma2
+        self.s1 = s1
+        self.s2 = s2
+        self.sigma1 = sigma1
+        self.sigma2 = sigma2
         self.Z = None
         self.t = None
-
+        self.sigma_x1subx2 = None
+        self.test_stat = None
+        self.test_statistic()
     
     def standard_error(self, var1, var2):
-    	""" Calculates standard error of difference of means.
-    	"""
-
+        """ Calculates standard error of difference of means.
+        """
         if self.sigma1 != None and self.sigma2 != None:
             sigma_x1subx2 = np.sqrt( (var1**2 / self.n1) + (var2**2 / self.n2) )
 
         elif var1 == var2:
-        	PVE = np.sqrt( (var1**2 * (self.n1 - 1) + var2**2 * (n2 - 1)) / \
-        		            (self.n1 + self.n2 - 2) )
+            PVE = np.sqrt( (var1**2 * (self.n1 - 1) + var2**2 * (n2 - 1)) / \
+                            (self.n1 + self.n2 - 2) )
             sigma_x1subx2 = PVE * np.sqrt( (1 / self.n1) + (1 / self.n2) )
 
         elif var1 != var2:
             SVE = np.sqrt( (var1**2 / self.n1) + (var2**2 / self.n2) )
-        	sigma_x1subx2 = SVE
+            sigma_x1subx2 = SVE
 
         return sigma_x1subx2
 
     def test_statistic(self):
         """ Calculates test statistic.
+
+        Should it return whether used Z or t?
         """
-
         if self.sigma1 != None and self.sigma2 != None and self.n1 >= 30 and self.n2 >= 30:
-            sigma_x1subx2 = self.standard_error(sigma1, sigma2)
-	        self.Z = np.sqrt((self.mean1 - self.mean2) / sigma_x1subx2)
+            sigma_x1subx2 = self.standard_error(self.sigma1, self.sigma2)
+            self.Z = (self.mean1 - self.mean2) / sigma_x1subx2
+            self.test_stat = self.Z
 
-        elif (self.sigma1 != None or self.sigma2 != None) or (self.n1 < 30 and self.n2 < 30):
-            sigma_x1subx2 = self.standard_error(s1, s2)
-            self.t = np.sqrt((self.mean1 - self.mean2) / sigma_x1subx2)
+        elif (self.sigma1 != None or self.sigma2 != None) or (self.n1 < 30 or self.n2 < 30):
+            sigma_x1subx2 = self.standard_error(self.s1, self.s2)
+            self.t = (self.mean1 - self.mean2) / sigma_x1subx2
+            self.test_stat = self.t
+
+        self.sigma_x1subx2 = sigma_x1subx2
 
     def get_Z(self):
-    	print(self.Z)
+        print(self.Z)
 
     def get_t(self):
-    	print(self.t)
+        print(self.t)
 
 class WilcoxonRankSum(DiffOfMeans):
     """ Compares two independent random sample rank sums for difference
@@ -168,21 +179,21 @@ class WilcoxonRankSum(DiffOfMeans):
     Test Statistic
     --------------
     
-    	Z_w = SumOfRanksSample_i - MeanRankOfW_i / StandardDeviationOfW
+        Z_w = SumOfRanksSample_i - MeanRankOfW_i / StandardDeviationOfW
 
-    	where
+        where
 
-    	MeanRankOfW_i = SampleSize_i * ([SampleSize1 + SampleSize2 + 1] / 2)
+        MeanRankOfW_i = SampleSize_i * ([SampleSize1 + SampleSize2 + 1] / 2)
 
-    	and
+        and
 
-    	StandardDeviationOfW = sqrt( SampleSize1 * SampleSize2 * 
-    	                            {[SampleSize1 + SampleSize2 + 1] / 12} )
+        StandardDeviationOfW = sqrt( SampleSize1 * SampleSize2 * 
+                                    {[SampleSize1 + SampleSize2 + 1] / 12} )
 
-    	"W" is the Zw of the group with the *smaller* sample size.
+        "W" is the Zw of the group with the *smaller* sample size.
 
     """
-    def __init__(self, W1, W2):
+    def __init__(self, n1, n2, W1, W2):
         DiffOfMeans.__init__(self, n1, n2)
         """
         Parameters
@@ -195,24 +206,27 @@ class WilcoxonRankSum(DiffOfMeans):
         self.W1 = W1
         self.W2 = W2
         self.Zw = None
+        self.s_w = self.standard_deviation()
+        self.test_statistic()
+        self.test_stat = self.Zw
 
     def standard_deviation(self):
-    	s_w = np.sqrt( self.n1 * self.n2 * (self.n1 + self.n2 + 1) / 12.0 )
-    	return s_w
+        s_w = np.sqrt( self.n1 * self.n2 * (self.n1 + self.n2 + 1) / 12.0 )
+        return s_w
     
     def mean_rank_W(self, n):
-    	mean_rank_W = n * (self.n1 + self.n2 + 1) / 2.0
-    	return mean_rank_W
+        mean_rank_W = n * (self.n1 + self.n2 + 1) / 2.0
+        return mean_rank_W
 
     def test_statistic(self):
-    	# Calculate for the sample with smaller size.
-        if n1 < n2:
-    	    self.Zw = W1 - self.mean_rank_W(n1) / self.standard_deviation()
-    	else:
-    		self.Zw = W2 - self.mean_rank_W(n2) / self.standard_deviation()
+        # Calculate for the sample with smaller size.
+        if self.n1 < self.n2:
+            self.Zw = (self.W1 - self.mean_rank_W(self.n1)) / self.s_w
+        else:
+            self.Zw = (self.W2 - self.mean_rank_W(self.n2)) / self.s_w
 
     def get_Zw(self):
-    	print(self.Zw)
+        print(self.Zw)
 
 
 class DiffOfProportions():
@@ -244,9 +258,9 @@ class DiffOfProportions():
                          (SampleSize1 + SampleSize2)
     """
     def __init__(self, n1, n2, p1, p2):
-    	"""
-    	Parameters
-    	----------
+        """
+        Parameters
+        ----------
         n1 : int
             Size of sample 1.
         n2 : int
@@ -259,22 +273,26 @@ class DiffOfProportions():
         self.n1 = float(n1)
         self.n2 = float(n2)
         self.p1 = p1
-        self.p2 = p2  
+        self.p2 = p2
+        self.pooled_estimate = None
         self.Zp = None
+        self.sigma_p1subp2 = self.standard_error()
+        self.test_statistic()
+        self.test_stat = self.Zp
 
     def standard_error(self):
         """ Calculates standard error of difference of proportions.
         """
         # The weighted proportion of the two samples.
         pooled_estimate = (self.n1 * self.p1 + self.n2 * self.p2) / (self.n1 + self.n2)
-        
         sigma_p1subp2 = np.sqrt( pooled_estimate * (1 - pooled_estimate) * \
-        	                     ((self.n1 + self.n2) / (self.n1 * self.n2)) )
+                                 ((self.n1 + self.n2) / (self.n1 * self.n2)) )
+        self.pooled_estimate = pooled_estimate
         return sigma_p1subp2
 
-
     def test_statistic(self):
-    	self.Zp = (p1 - p2) / self.standard_error()
+        self.Zp = abs(self.p1 - self.p2) / self.sigma_p1subp2
 
     def get_Zp(self):
-        print(self.Zp)      
+        print(self.Zp) 
+
