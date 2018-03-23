@@ -18,6 +18,8 @@ References:
 from __future__ import print_function
 
 import numpy as np
+import pandas as pd
+from stats.tables.load_table import LoadNormalTable
 
 
 class PValue(object):
@@ -82,12 +84,13 @@ class PValue(object):
         area : float
         """
         # Need look up on Z or t table what the area should be. 
-        # for now, assume
         if self.n >= 30:
-            area = 0.4495
+            z_table = LoadNormalTable()
+            area = z_table.find_prob(self.test_stat)
         elif self.n < 30:
-            area = 0.4715
-
+            t_table = LoadStudentsTTable(tails=1)
+            area = t_table.find_prob(self.test_stat, df=self.n)
+            #area = 1.0 - area
         return area
 
     def determine_rejection_area(self):

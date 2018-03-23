@@ -32,10 +32,6 @@ class LoadTable(object):
         table = pd.read_csv(self.filename)
         return table
 
-def find_nearest(array, value):
-    idx = pd.Series((np.abs(array-value))).idxmin()
-    return array[idx]
-
 class LoadNormalTable(LoadTable):
     """ A normal table object.
     """
@@ -103,3 +99,61 @@ class LoadNormalTable(LoadTable):
         prob = round(normal_table[z1][z0], 6)
 
         return prob
+
+class LoadStudentsTTable(LoadTable):
+    """ A normal table object.
+    """
+    def __init__(self, tails):
+        """
+
+        Parameters
+        ----------
+        tails : int
+            1 or 2.
+        """
+        if tails == 1:
+            LoadTable.__init__(self, 'students_t_table_one_tail.csv')
+        else:
+            LoadTable.__init__(self, 'students_t_table_two_tail.csv')
+        temp_table = self.load_table()
+        self.t_table = temp_table.set_index("df")
+
+    def find_t(self, df, confidence=0.95):
+        """  Finds the T-value of distribution.
+
+        By default the confidence level is 95%.
+
+        Parameters
+        ----------
+        df : int
+            Degrees of freedom (size of sample).
+        confidence : float
+            The confidence level (area under distriubtion curve within
+            interval). 
+
+        Returns
+        -------
+        t_score : float
+            The test statistic.
+        """
+        t_table = self.t_table
+        neareset_confidence = find_nearest
+        t_score = t_table[str(nearest_confidence)][df]
+
+        return t_score
+
+    def find_confidence(self, t, df):
+        """ Finds confidence level (area) of tail(s) of distribution.
+
+        Parameters
+        ----------
+        t : float
+            The test statistic.
+        df : int
+            Degrees of freedom (size of sample).       
+        """
+
+
+def find_nearest(array, value):
+    idx = pd.Series((np.abs(array-value))).idxmin()
+    return array[idx]

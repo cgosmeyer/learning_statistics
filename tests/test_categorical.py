@@ -33,7 +33,6 @@ class TestChiSquare(object):
         val = round(ChiSqaretest.test_stat, 2)
         assert val == 3.96
 
-
 class TestKolmogorovSmirnov(object):
     NotImplemented
 
