@@ -40,7 +40,7 @@ class LoadNormalTable(LoadTable):
         temp_table = self.load_table()
         self.normal_table = temp_table.set_index("z")
 
-    def find_z(self, prob):
+    def find_z(self, prob, tails=1):
         """ Given probability, return nearest Z-score from normal table.
 
         Parameters
@@ -48,12 +48,17 @@ class LoadNormalTable(LoadTable):
         prob : float
             The probability, i.e., the area under section of probability
             distriubtion curve.
+        tails : int
+            1 or 2. The prob will be divided by this number (all 
+            calculations assume one tail). Do not change to 2 if your
+            `prob` value already is divided in half.
 
         Returns
         -------
         z_score : float
             The Z-score or standard score.
         """
+        prob /= float(tails)
         normal_table = self.normal_table
 
         # Find closest probability in table
@@ -77,13 +82,15 @@ class LoadNormalTable(LoadTable):
 
         return z_score
 
-    def find_prob(self, z):
+    def find_prob(self, z, tails=1):
         """ Given Z-score, return nearest probability from table.
 
         Parameters
         ----------
-        z_score : float
+        z : float
             The Z-score or standard score.
+        tails : int
+            1 or 2.
 
         Returns
         -------
@@ -97,6 +104,7 @@ class LoadNormalTable(LoadTable):
         z1 = str(round(z, 2) - z0)
 
         prob = round(normal_table[z1][z0], 6)
+        prob *= tails
 
         return prob
 
@@ -119,7 +127,8 @@ class LoadStudentsTTable(LoadTable):
         self.t_table = temp_table.set_index("df")
 
     def find_t(self, df, confidence=0.95):
-        """  Finds the T-value of distribution.
+        """  Finds the T-value of distribution. The table goes to df-1000,
+        after which all is effectively infinity and returns same value.
 
         By default the confidence level is 95%.
 
@@ -137,8 +146,9 @@ class LoadStudentsTTable(LoadTable):
             The test statistic.
         """
         t_table = self.t_table
-        neareset_confidence = find_nearest
-        t_score = t_table[str(nearest_confidence)][df]
+        nearest_confidence = round(find_nearest(list(t_table) 1.0-confidence), 4)
+        nearest_df = round(find_nearest(t_table.index, df), 0)
+        t_score = round(t_table[str(nearest_confidence)][nearest_df], 4)
 
         return t_score
 
@@ -152,8 +162,17 @@ class LoadStudentsTTable(LoadTable):
         df : int
             Degrees of freedom (size of sample).       
         """
+        t_table = self.t_table
+        nearest_df = round(find_nearest(t_table.index, df), 0)
+        nearest_t = round(find_nearest(t_table.loc[nearest_df], t), 6)
+        for col in list(t_table):
+            if nearest_t == round(t_table[col][nearest_df], 6):
+                confidence = 1.0 - float(col)
+                return confidence
 
 
 def find_nearest(array, value):
+    array = np.array(array, dtype=float)
+    value = float(value)
     idx = pd.Series((np.abs(array-value))).idxmin()
     return array[idx]
