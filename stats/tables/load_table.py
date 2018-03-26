@@ -157,7 +157,7 @@ class LoadStudentsTTable(LoadTable):
         return t_score
 
     def find_confidence(self, t, df):
-        """ Finds confidence level (area) of tail(s) of distribution.
+        """ Finds confidence level (area) of ONE tail of distribution.
 
         Parameters
         ----------
@@ -171,7 +171,9 @@ class LoadStudentsTTable(LoadTable):
         nearest_t = round(find_nearest(t_table.loc[nearest_df], t), 6)
         for col in list(t_table):
             if nearest_t == round(t_table[col][nearest_df], 6):
-                confidence = 1.0 - float(col)
+                # Subtract from one to get confidence, divide by two to get
+                # single section on positive side of distribution.
+                confidence = (1.0 - float(col)) / 2.0
                 return confidence
 
 
