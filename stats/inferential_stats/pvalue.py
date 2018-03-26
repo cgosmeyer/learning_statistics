@@ -19,12 +19,12 @@ from __future__ import print_function
 
 import numpy as np
 import pandas as pd
-from stats.tables.load_table import LoadNormalTable
+from stats.tables.load_table import LoadNormalTable, LoadStudentsTTable
 
 
 class PValue(object):
 
-    def __init__(self, hyp_val, val, n, stddev, rejection):
+    def __init__(self, test_stat, n, rejection): #hyp_val, val, n, stddev, rejection):
         """ 
         If p-value near 1: Trust null hypothesis. ("our data is highly
            consistant with our hypothesis")
@@ -48,40 +48,41 @@ class PValue(object):
         """
 
         #  null hypthesis : val - hyp_val = 0
-        self.hyp_val = hyp_val
-        self.val = val
+        #self.hyp_val = hyp_val
+        #self.val = val
         self.n = n
-        self.stddev = stddev
+        #self.stddev = stddev
         self.rejection = rejection
 
-        self.test_stat = self.test_statistic()
+        self.test_stat = test_stat #self.test_statistic()
         self.area = self.determine_probability_tail()
         self.pvalue = self.determine_rejection_area()
 
-    def test_statistic(self):
-        """ Generalized test statistic.
-
-        Returns
-        -------
-        test_stat : float
-            Test statistic.
-        """
-        if self.n >= 30:
-            # Z
-            test_stat = (self.val - self.hyp_val) / (self.stddev / np.sqrt(self.n))
-        elif self.n < 30:
-            # t
-            test_stat = (self.val - self.hyp_val) / (self.stddev / np.sqrt(self.n - 1))
-
-        return test_stat
+    #def test_statistic(self):
+    #    """ Generalized test statistic.
+    #
+    #    Returns
+    #    -------
+    #    test_stat : float
+    #        Test statistic.
+    #    """
+    #    if self.n >= 30:
+    #        # Z
+    #        test_stat = (self.val - self.hyp_val) / (self.stddev / np.sqrt(self.n))
+    #    elif self.n < 30:
+    #        # t
+    #        test_stat = (self.val - self.hyp_val) / (self.stddev / np.sqrt(self.n - 1))
+    #
+    #    return test_stat
 
     def determine_probability_tail(self):
-        """ Calculates probability (relative area) under each tail of 
+        """ Calculates probability (relative area) under one section of 
         normal curve for given test statistic.
 
         Returns
         -------
         area : float
+            The area under one section of probability distribution curve.
         """
         # Need look up on Z or t table what the area should be. 
         if self.n >= 30:
@@ -89,13 +90,13 @@ class PValue(object):
             area = z_table.find_prob(self.test_stat)
         elif self.n < 30:
             t_table = LoadStudentsTTable(tails=1)
-            area = t_table.find_prob(self.test_stat, df=self.n)
-            #area = 1.0 - area
+            area = t_table.find_confidence(self.test_stat, df=self.n)
+        #area = 0.5 - area
         return area
 
     def determine_rejection_area(self):
         """ Determine rejection area by subtracting probability from 0.5.
-        This value is the p-value.
+        This value is the p-value (area of tail).
 
         Returns
         -------

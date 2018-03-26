@@ -21,6 +21,10 @@ To Do:
 
 import numpy as np
 import pandas as pd
+import os
+
+p = os.path.abspath(__file__)
+p = '/'.join(p.split('/')[:-1])
 
 class LoadTable(object):
     """
@@ -36,7 +40,7 @@ class LoadNormalTable(LoadTable):
     """ A normal table object.
     """
     def __init__(self):
-        LoadTable.__init__(self, 'normal_table.csv')
+        LoadTable.__init__(self, os.path.join(p, 'normal_table.csv'))
         temp_table = self.load_table()
         self.normal_table = temp_table.set_index("z")
 
@@ -120,9 +124,9 @@ class LoadStudentsTTable(LoadTable):
             1 or 2.
         """
         if tails == 1:
-            LoadTable.__init__(self, 'students_t_table_one_tail.csv')
+            LoadTable.__init__(self, os.path.join(p, 'students_t_table_one_tail.csv'))
         else:
-            LoadTable.__init__(self, 'students_t_table_two_tail.csv')
+            LoadTable.__init__(self, os.path.join(p, 'students_t_table_two_tail.csv'))
         temp_table = self.load_table()
         self.t_table = temp_table.set_index("df")
 
@@ -146,7 +150,7 @@ class LoadStudentsTTable(LoadTable):
             The test statistic.
         """
         t_table = self.t_table
-        nearest_confidence = round(find_nearest(list(t_table) 1.0-confidence), 4)
+        nearest_confidence = round(find_nearest(list(t_table), 1.0-confidence), 4)
         nearest_df = round(find_nearest(t_table.index, df), 0)
         t_score = round(t_table[str(nearest_confidence)][nearest_df], 4)
 

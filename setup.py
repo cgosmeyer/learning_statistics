@@ -10,6 +10,8 @@ setup(name = 'stats',
       author = 'C.M. Gosmeyer',
       url = 'https://github.com/cgosmeyer/learning_statistics',
       packages = find_packages(),
-      install_requires = ['numpy']
+      install_requires = ['numpy'],
+      #package_data = {'stats' : ['stats/tables/*.csv']},
+      include_package_data=True
      )
 
