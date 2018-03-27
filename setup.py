@@ -11,7 +11,6 @@ setup(name = 'stats',
       url = 'https://github.com/cgosmeyer/learning_statistics',
       packages = find_packages(),
       install_requires = ['numpy'],
-      #package_data = {'stats' : ['stats/tables/*.csv']},
       include_package_data=True
      )
 

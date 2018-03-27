@@ -1,4 +1,4 @@
-""" Validation tests for the two-sample difference classes.
+""" Verification tests for the two-sample difference classes.
 
 Author:
     

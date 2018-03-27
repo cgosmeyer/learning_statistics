@@ -1,4 +1,4 @@
-""" Validation tests for the matched-pairs classes.
+""" Verification tests for the matched-pairs classes.
 
 Author:
     

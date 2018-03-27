@@ -1,4 +1,4 @@
-""" Validation tests for the multi-sample classes.
+""" Verification tests for the multi-sample classes.
 
 Author:
     

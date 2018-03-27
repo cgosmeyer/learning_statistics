@@ -1,4 +1,4 @@
-""" Validation tests for the p-value test.
+""" Verification tests for the p-value test.
 
 Author:
     
