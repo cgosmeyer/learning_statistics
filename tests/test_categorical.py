@@ -18,7 +18,7 @@ References:
 import numpy as np
 import pytest
 from stats.inferential_stats.categorical import *
-
+from stats.inferential_stats.pvalue import PValue
 
 class TestChiSquare(object):
     """ Uses table 12.1
@@ -32,6 +32,14 @@ class TestChiSquare(object):
         ChiSqaretest = self.setup()
         val = round(ChiSqaretest.test_stat, 2)
         assert val == 3.96
+
+    def test_pvalue(self):
+        ChiSqaretest = self.setup()
+        chi_square = round(ChiSqaretest.test_stat, 2)
+        p = PValue(test_stat=chi_square, n=5, chi_square=True)
+        pvalue = round(p.pvalue, 2)
+        assert pvalue == 0.41       
+
 
 class TestKolmogorovSmirnov(object):
     NotImplemented

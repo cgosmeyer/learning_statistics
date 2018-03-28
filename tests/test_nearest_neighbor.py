@@ -27,7 +27,6 @@ class TestNearestNeighbor(object):
         x_pos = [ 1.3,  3.2,  3.3,  5.6,  4.8,  8.1,  9.4]
         y_pos = [ 0.9,  4.4,  6.4,  3.8,  2.7,  7.4,  3.4]
         area = 1
-
         return NearestNeighbor(area=area, x_pos=x_pos, y_pos=y_pos)
 
     def test_NND(self):
@@ -65,5 +64,5 @@ class TestNearestNeighbor(object):
         nn = self.setup_2()
         Z_n = round(nn.Z_n, 2)
         pvalue = round(PValue(Z_n, 20, rejection=1, min_n=20).pvalue, 3)
-        assert pvalue == .008
+        assert pvalue == 0.008
 

@@ -17,6 +17,8 @@ To Do:
 
     Should tables interpolate?
 
+    y = y1 + ((x - x1) / (x2 - x1)) * (y2 - y1)
+
 """
 
 import numpy as np
@@ -176,6 +178,63 @@ class LoadStudentsTTable(LoadTable):
                 confidence = (1.0 - float(col)) / 2.0
                 return confidence
 
+class LoadChi2Table(LoadTable):
+    """ A normal table object.
+    """
+    def __init__(self):
+        """
+
+        Parameters
+        ----------
+        
+        """
+        LoadTable.__init__(self, os.path.join(p, 'chi_square_table.csv'))
+        temp_table = self.load_table()
+        self.chi2_table = temp_table.set_index("df")  
+
+    def find_chi2(self, df, confidence=0.95):
+        """  Finds the T-value of distribution. The table goes to df-1000,
+        after which all is effectively infinity and returns same value.
+
+        By default the confidence level is 95%.
+
+        Parameters
+        ----------
+        df : int
+            Degrees of freedom (size of sample).
+        confidence : float
+            The confidence level (area under distriubtion curve within
+            interval). 
+
+        Returns
+        -------
+        t_score : float
+            The test statistic.
+        """
+        chi2_table = self.chi2_table
+        nearest_confidence = round(find_nearest(list(chi2_table), 1.0-confidence), 4)
+        nearest_df = round(find_nearest(chi2_table.index, df), 0)
+        chi2_score = round(chi2_table[str(nearest_confidence)][nearest_df], 4)
+        return chi2_score
+
+    def find_confidence(self, chi2, df):
+        """ Finds confidence level (area) of ONE tail of distribution.
+
+        Parameters
+        ----------
+        chi2 : float
+            The test statistic.
+        df : int
+            Degrees of freedom (size of sample).
+        """
+        chi2_table = self.chi2_table
+        nearest_df = round(find_nearest(chi2_table.index, df), 0)
+        nearest_chi2 = round(find_nearest(chi2_table.loc[nearest_df], chi2), 6)
+        for col in list(chi2_table):
+            if nearest_chi2 == round(chi2_table[col][nearest_df], 6):
+                # Subtract from one to get confidence.
+                confidence = (1.0 - float(col))
+                return confidence
 
 def find_nearest(array, value):
     array = np.array(array, dtype=float)

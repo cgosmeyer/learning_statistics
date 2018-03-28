@@ -19,12 +19,12 @@ from __future__ import print_function
 
 import numpy as np
 import pandas as pd
-from stats.tables.load_table import LoadNormalTable, LoadStudentsTTable
+from stats.tables.load_table import LoadNormalTable, LoadStudentsTTable, LoadChi2Table
 
 
 class PValue(object):
 
-    def __init__(self, test_stat, n, rejection, min_n=30):
+    def __init__(self, test_stat, n, rejection=1, chi_square=False, min_n=30):
         """ 
         If p-value near 1: Trust null hypothesis. ("our data is highly
            consistant with our hypothesis")
@@ -50,6 +50,7 @@ class PValue(object):
         self.n = n
         self.rejection = rejection
         self.min_n = min_n
+        self.chi_square = chi_square
 
         self.area = self.determine_probability_tail()
         self.pvalue = self.determine_rejection_area()
@@ -63,13 +64,19 @@ class PValue(object):
         area : float
             The area under one section of probability distribution curve.
         """
-        # Need look up on Z or t table what the area should be. 
+        # If test statistic is a Chi-Square,
+        if self.chi_square:
+            chi2_table = LoadChi2Table()
+            area = chi2_table.find_confidence(self.test_stat, df=self.n-1)
+            return area
+
+        # Otherwise, need look up on Z or t table what the area should be. 
         if self.n >= self.min_n:
             z_table = LoadNormalTable()
             area = z_table.find_prob(self.test_stat)
         elif self.n < self.min_n:
             t_table = LoadStudentsTTable(tails=1)
-            area = t_table.find_confidence(self.test_stat, df=self.n)
+            area = t_table.find_confidence(self.test_stat, df=self.n-1)
         return area
 
     def determine_rejection_area(self):
@@ -80,10 +87,13 @@ class PValue(object):
         -------
         pvalue : float
         """
-        pvalue = 0.5 - self.area
+        if self.chi_square:
+            pvalue = 1.0 - self.area
 
-        # Double area if two-tailed.
-        pvalue *= self.rejection
+        else:
+            pvalue = 0.5 - self.area
+            # Double area if two-tailed.
+            pvalue *= self.rejection
 
         return pvalue
 
