@@ -87,15 +87,15 @@ class JointCountBinary(object):
         self.link_list = np.asarray(link_list)
 
         self.N = self.B + self.W 
-        self.sum_links = self.J * 2
+        #self.sum_links = self.J * 2
 
-        self.expected_joins = self.expected_joins()
-        self.sigma_expected_joins = self.sigma_expected_joins()
+        self.expected_joins = self.return_expected_joins()
+        self.sigma_expected_joins = self.return_sigma_expected_joins()
         self.Z_b = None 
         self.test_statistic()
         self.test_stat = self.Z_b
 
-    def expected_joins(self):
+    def return_expected_joins(self):
         B = self.B
         W = self.W
         J = self.J
@@ -104,17 +104,16 @@ class JointCountBinary(object):
 
         return expected_joins
 
-    def sigma_expected_join(self):
+    def return_sigma_expected_joins(self):
         B = self.B
         W = self.W
         J = self.J
         N = self.N
-        sum_links = self.sum_links
-        link_list_sub_1 = sum([ L-1 for L in self.link_list ])
+        L_sums = sum([ L*(L-1) for L in self.link_list ])
 
         sigma_expected_joins = np.sqrt( self.expected_joins +
-            (sum_L*link_list_sub_1*B*W / (N*(N-1))) +
-            ((4*(J*(J-1)-sum_links*link_list_sub_1)*B*(B-1)*W*(W-1)) / (N*(N-1)*(N-2)*(N-3))) -
+            (L_sums*B*W / (N*(N-1))) +
+            ((4*(J*(J-1)-L_sums)*B*(B-1)*W*(W-1)) / (N*(N-1)*(N-2)*(N-3))) -
             self.expected_joins**2 )
 
         return sigma_expected_joins       
