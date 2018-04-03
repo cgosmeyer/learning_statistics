@@ -25,6 +25,7 @@ import numpy as np
 import pandas as pd
 import os
 
+# Get absolute path to table files.
 p = os.path.abspath(__file__)
 p = '/'.join(p.split('/')[:-1])
 
@@ -183,10 +184,6 @@ class LoadChi2Table(LoadTable):
     """
     def __init__(self):
         """
-
-        Parameters
-        ----------
-        
         """
         LoadTable.__init__(self, os.path.join(p, 'chi_square_table.csv'))
         temp_table = self.load_table()
@@ -208,17 +205,17 @@ class LoadChi2Table(LoadTable):
 
         Returns
         -------
-        t_score : float
+        chi2 : float
             The test statistic.
         """
         chi2_table = self.chi2_table
         nearest_confidence = round(find_nearest(list(chi2_table), 1.0-confidence), 4)
         nearest_df = round(find_nearest(chi2_table.index, df), 0)
-        chi2_score = round(chi2_table[str(nearest_confidence)][nearest_df], 4)
-        return chi2_score
+        chi2 = round(chi2_table[str(nearest_confidence)][nearest_df], 4)
+        return chi2
 
     def find_confidence(self, chi2, df):
-        """ Finds confidence level (area) of ONE tail of distribution.
+        """ Finds confidence level (area) of right-hand-side of distribution.
 
         Parameters
         ----------
