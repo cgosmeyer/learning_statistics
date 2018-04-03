@@ -2,9 +2,6 @@
 Playground for coding up statistical tests.
 
 ## To Do:
+   
+      1. Refactor so that classes have an attribute that declares whether Z-, t-, F-test, chisquare-test, which the PValue class should use to determine appropriate table. Make PValue determination an attribute of each statistic class.
 
-	1. Write a ruler base class.  
-
-		1a. Must include a distribution plot.
-
-	2. Give each statistic test a python test drawn from text book.
