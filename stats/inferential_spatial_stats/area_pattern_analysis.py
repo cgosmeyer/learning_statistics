@@ -63,6 +63,7 @@ class JointCountBinary(object):
 
     where
 
+    L = list of links for each area
     sum(L) = total number of links = 2J
     """                         
     def __init__(self, B, W, J, link_list, observed_joins):
@@ -87,8 +88,6 @@ class JointCountBinary(object):
         self.link_list = np.asarray(link_list)
 
         self.N = self.B + self.W 
-        #self.sum_links = self.J * 2
-
         self.expected_joins = self.return_expected_joins()
         self.sigma_expected_joins = self.return_sigma_expected_joins()
         self.Z_b = None 
@@ -123,6 +122,102 @@ class JointCountBinary(object):
 
     def get_Zb(self):
         print(self.Z_b)
+
+
+class MoransIndexGlobal(object):
+    """ Identify significant spatial patterns within a study area.
+
+    Requirements
+    ------------
+    1. Minimum of 30 geographic features.
+    2. Attribute values measures on an ordinal or interval/ratio scale.
+
+    Null Hypthothesis
+    -----------------
+    H0 : Attribute values are randomly distributed across features in 
+    study area.
+
+    Test Statistic
+    --------------
+
+    I = n * sum( (x_i - x_mean)*(x_j - x_mean) ) / J * sum( x - x_mean)^2
+
+    where
+
+    n = number of objects
+    J = number of joins
+    x = area attribute value
+    x_mean = mean of all area attribute values
+    x_i, x_j = values of contiguous pairs
+
+    Interpretation
+    --------------
+
+    Assuming significant p-value:
+
+    I < 0 : observed pattern is dispersed
+    I = 0 : observed pattern is random
+    I > 0 : observed pattern is clustered
+
+    """   
+    def __init__(self, area_joins, area_attributes, assumption='normal'):
+        """
+        Parameters
+        ----------
+        area_joins : list of ints
+            The number of joins for each area.
+        area_attributes : list of lists
+            The i, j area attributes for each join.
+        assumption : str
+            Either "normal" or "random"; will determine the calculated 
+            variance of the distribution.
+        """
+        self.J = float(J)
+        self.area_joins = np.asarray(area_joins) # L
+        self.area_attributes = np.asarray(area_attributes) # x_i, x_j
+        self.assumption = assumption
+
+        self.n = float(len(area_joins))
+        self.J = float(len(area_attributes))
+        self.I = None
+        self.test_statistic()
+        self.test_stat = self.I
+        self.var_I = self.variance()
+        self.z_score = self.z_score()
+
+    def test_statistic(self):
+        xs = list(set(x[0] for x in self.area_attributes))
+        x_mean = np.mean(xs)
+        x_sum_pairs = sum( [(x_i-x_mean)*(x_j-x_mean) for x_i, x_j in self.area_attributes] )
+        x_variance_attribute_vals = sum( [(x-x_mean) for x in xs] )
+        self.I = (self.n * x_sum_pairs) / (self.J *  x_variance_attribute_vals)
+
+    def variance(self):
+        sum_L2 = sum(area_joins**2)
+        if self.assumption == 'normal'
+            var_I = (self.n**2 + 3*self.J**2 - self.n*sum_L2) / \
+                    (self.J**2 * (self.n**2 - 1))
+
+        elif self.assumption == 'random'
+            k = # kurtosis of x
+            var_I = ( self.n * ( self.J*(self.n**2+3-3*self.n) + \
+                               + 3*self.J**2 - self.n*sum_L2 ) - \
+                      k * ( self.J*(self.n**2 - self.n) + \
+                            6*self.J**2 - \
+                            2*self.n*sum_L2 ) ) / \
+                    ( self.J**2*(self.n-1)*(self.n-2)*(self.n-3) )
+
+        else:
+            var_I = 0
+
+        return var_I
+
+
+    def z_score(self):
+        expected_I = -1 / (self.n - 1)
+        self.z_score = (self.I - expected_I) / np.sqrt(self.var_I)
+
+
 
 
 
