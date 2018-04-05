@@ -44,5 +44,44 @@ class TestJointCountBinary(object):
     def test_Zb(self):
         jcb = self.setup()
         test_stat = round(jcb.test_stat, 2)
-        assert test_stat == -6.66    
+        assert test_stat == -6.66
+
+    #def test_pvalue(self):
+    #    jcb = self.setup()
+    #    jcb = round(jcb.test_stat, 2)
+    #    p = PValue(test_stat=jcb, n=48)
+    #    pvalue = round(p.pvalue, 2)
+    #    assert pvalue == 0.0             
+
+class TestMoransIndexGlobal(object):
+    """ Uses table 15.6.
+    """
+    def setup(self):
+        area_joins = [2,3,3,2]
+        area_attributes = [ [70,80], [70,20], [20,80], [80,10], [10,20] ]
+        return MoransIndexGlobal(area_joins, area_attributes)
+
+    def test_I(self):
+        mig = self.setup()
+        I = round(mig.I, 2)
+        assert I == -0.21
+
+    def test_variance(self):
+        mig = self.setup()
+        var_I = round(mig.var_I, 2)
+        assert var_I == 0.14
+
+    def test_z_score(self):
+        mig = self.setup()
+        z_score = round(mig.z_score, 2)
+        assert z_score == 0.33
+
+    def test_pvalue(self):
+        mig = self.setup()
+        z_score = round(mig.z_score, 2)
+        p = PValue(test_stat=z_score, n=4, min_n=1, rejection=2) 
+        # what is n really in this case and shouldn't use the T table??
+        pvalue = round(p.pvalue,2)
+        assert pvalue == 0.74
+
 

@@ -172,7 +172,6 @@ class MoransIndexGlobal(object):
             Either "normal" or "random"; will determine the calculated 
             variance of the distribution.
         """
-        self.J = float(J)
         self.area_joins = np.asarray(area_joins) # L
         self.area_attributes = np.asarray(area_attributes) # x_i, x_j
         self.assumption = assumption
@@ -186,20 +185,23 @@ class MoransIndexGlobal(object):
         self.z_score = self.z_score()
 
     def test_statistic(self):
-        xs = list(set(x[0] for x in self.area_attributes))
+        xs = list(set([x[0] for x in self.area_attributes]))
         x_mean = np.mean(xs)
         x_sum_pairs = sum( [(x_i-x_mean)*(x_j-x_mean) for x_i, x_j in self.area_attributes] )
-        x_variance_attribute_vals = sum( [(x-x_mean) for x in xs] )
+        x_variance_attribute_vals = sum( [(x-x_mean)**2 for x in xs] )
         self.I = (self.n * x_sum_pairs) / (self.J *  x_variance_attribute_vals)
 
     def variance(self):
-        sum_L2 = sum(area_joins**2)
-        if self.assumption == 'normal'
-            var_I = (self.n**2 + 3*self.J**2 - self.n*sum_L2) / \
-                    (self.J**2 * (self.n**2 - 1))
+        sum_L2 = float(sum(self.area_joins**2))
+        if self.assumption == 'normal':
+            var_I = (self.J*self.n**2 + 3*self.J**2 - self.n*sum_L2) / \
+                    (self.J**2 * (self.n**2 - 1.))
 
-        elif self.assumption == 'random'
-            k = # kurtosis of x
+        elif self.assumption == 'random':
+            xs = list(set([x[0] for x in self.area_attributes]))
+            x_mean = np.mean(xs)
+            # Now calculate kurtosis.
+            k = sum( [(x-x_mean)**4 for x in xs] ) / (len(xs) * np.std(xs)**4) - 3
             var_I = ( self.n * ( self.J*(self.n**2+3-3*self.n) + \
                                + 3*self.J**2 - self.n*sum_L2 ) - \
                       k * ( self.J*(self.n**2 - self.n) + \
@@ -212,12 +214,9 @@ class MoransIndexGlobal(object):
 
         return var_I
 
-
     def z_score(self):
-        expected_I = -1 / (self.n - 1)
-        self.z_score = (self.I - expected_I) / np.sqrt(self.var_I)
-
-
-
+        expected_I = -1. / (self.n - 1.)
+        z_score = (self.I - expected_I) / np.sqrt(self.var_I)
+        return z_score
 
 
