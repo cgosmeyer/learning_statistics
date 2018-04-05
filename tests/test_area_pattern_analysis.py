@@ -46,12 +46,12 @@ class TestJointCountBinary(object):
         test_stat = round(jcb.test_stat, 2)
         assert test_stat == -6.66
 
-    #def test_pvalue(self):
-    #    jcb = self.setup()
-    #    jcb = round(jcb.test_stat, 2)
-    #    p = PValue(test_stat=jcb, n=48)
-    #    pvalue = round(p.pvalue, 2)
-    #    assert pvalue == 0.0             
+    def test_pvalue(self):
+        jcb = self.setup()
+        jcb = round(jcb.test_stat, 2)
+        p = PValue(test_stat=jcb, n=48)
+        pvalue = round(p.pvalue, 2)
+        assert pvalue == 0.0             
 
 class TestMoransIndexGlobal(object):
     """ Uses table 15.6.

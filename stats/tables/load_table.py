@@ -107,11 +107,15 @@ class LoadNormalTable(LoadTable):
         """
         normal_table = self.normal_table
 
-        z0 = round(z, 1)
-        z1 = str(round(z, 2) - z0)
+        if z > 4:
+            prob = 0.5
 
-        prob = round(normal_table[z1][z0], 6)
-        prob *= tails
+        else:
+            z0 = round(z, 1)
+            z1 = str(round(z, 2) - z0)
+
+            prob = round(normal_table[z1][z0], 6)
+            prob *= tails
 
         return prob
 

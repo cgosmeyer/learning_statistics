@@ -218,5 +218,3 @@ class MoransIndexGlobal(object):
         expected_I = -1. / (self.n - 1.)
         z_score = (self.I - expected_I) / np.sqrt(self.var_I)
         return z_score
-
-
