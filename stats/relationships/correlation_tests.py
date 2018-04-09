@@ -113,6 +113,11 @@ class SpearmanRankCorrelation(object):
 
         SampleCorrelationCoefficient = 1 - (6*(sum(DifferenceInRanksOfVariables)) / 
                                             (NumberPairedValues^3 - NumberPairedValues))
+
+    Notes
+    -----
+    1. Assumption that using Z distribution.
+    2. Assumption that the number of rank ties does not exceed 25% of data.
     """
     def __init__(self, x_ranks, y_ranks):
         """

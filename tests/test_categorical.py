@@ -1,4 +1,4 @@
-""" Validation tests for the categorical difference tests.
+""" Verification tests for the categorical difference tests.
 
 Author:
     
